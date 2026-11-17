@@ -1,1 +1,1 @@
-# Web-Dev-Studies
+# API project in golang
