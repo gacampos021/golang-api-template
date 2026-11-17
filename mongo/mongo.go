@@ -14,17 +14,16 @@ var MongoClient *mongo.Client
 
 func init() {
 	if err := connect_mongodb(); err != nil {
-		log.Fatal("error connecting mongodb")
+		log.Fatal("error connecting mongodb", err)
 	}
 }
 
 func connect_mongodb() error {
 	config.LoadEnv()
 	uri := config.GetEnv("URI_MONGO")
-
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().ApplyURI(uri).SetServerAPIOptions((serverAPI))
-
+	
 	client, err := mongo.Connect(context.TODO(), opts)
 	if err != nil {
 		panic(err)

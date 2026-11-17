@@ -2,7 +2,10 @@ package auth
 
 import (
 	"net/http"
+	"log"
+	"study-api/mongo"
 
+	"go.mongodb.org/mongo-driver/bson"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,17 +29,24 @@ func Login(c *gin.Context) {
 		return
 	}
 
-	// 🔴 AQUI VOCÊ VERIFICARIA NO BANCO DE DADOS
-	// Por enquanto, vamos aceitar qualquer email/password
-	// MUDE ISSO DEPOIS!
-	if req.Email != "user@example.com" || req.Password != "senha123" {
+	var user bson.M
+	err := mongo.MongoClient.Database("users").Collection("users").
+		FindOne(c, bson.M{"email": req.Email}).Decode(&user)
+	if err != nil {
+		log.Printf("erro ao buscar usuário: %v", err)
+		return
+	}
+
+	log.Printf("%+v", user)
+
+	if req.Email != user["email"] || req.Password != user["password"] {
 		c.JSON(http.StatusUnauthorized, gin.H{
 			"error": "email ou senha incorretos",
 		})
 		return
 	}
 
-	token, err := GenerateToken("user123", req.Email)
+	token, err := GenerateToken(user["user"].(string), req.Email)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"error": err.Error(),
